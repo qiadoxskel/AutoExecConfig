@@ -25,7 +25,7 @@
 
 #include <sourcemod>
 
-#define AUTOEXECCONFIG_VERSION "0.1.4"
+#define AUTOEXECCONFIG_VERSION "0.1.4m"
 #define AUTOEXECCONFIG_URL     "https://forums.alliedmods.net/showthread.php?t=204254"
 
 // Append
@@ -266,6 +266,159 @@ stock ConVar AutoExecConfig_CreateConVar(const char[] name, const char[] default
 }
 
 
+/**
+ * Creates a convar with min of 0 and max of 1 and appends it to the autoconfigfile if not found.
+ * FCVAR_DONTRECORD will be skipped.
+ *
+ * @param name                Name of new convar.
+ * @param defaultValue        String containing the default value of new convar.
+ * @param description         Optional description of the convar.
+ * @param flags               Optional bitstring of flags determining how the convar should be handled. See FCVAR_* constants for more details.
+ * @return                    A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
+ * @error                     Convar name is blank or is the same as an existing console command.
+*/
+stock ConVar AutoExecConfig_CreateConVar_Toggle(const char[] name, const char[] defaultValue, const char[] description="", int flags=0)
+{
+	// If configfile was set and convar has no dontrecord flag
+	if (!(flags & FCVAR_DONTRECORD) && strlen(g_sConfigFile) > 0)
+	{
+		// Reset the results
+		g_iLastFindResult = -1;
+		g_iLastAppendResult = -1;
+		
+		
+		// Add it if not found
+		char buffer[64];
+		
+		g_iLastFindResult = AutoExecConfig_FindValue(name, buffer, sizeof(buffer), true);
+		
+		// We only add this convar if it doesn't exist, or the file doesn't exist and it should be auto-generated
+		if (g_iLastFindResult == AUTOEXEC_FIND_NOT_FOUND || (g_iLastFindResult == AUTOEXEC_FIND_FILE_NOT_FOUND && g_bCreateFile))
+		{
+			g_iLastAppendResult = AutoExecConfig_AppendValue(name, defaultValue, description, flags, true, 0.0, true, 0.1);
+		}
+	}
+	
+	
+	// Create the convar
+	return CreateConVar(name, defaultValue, description, flags, true, 0.0, true, 1.0);
+}
+
+/**
+ * Creates a convar with a minimum of zero and appends it to the autoconfigfile if not found.
+ * FCVAR_DONTRECORD will be skipped.
+ *
+ * @param name                Name of new convar.
+ * @param defaultValue        String containing the default value of new convar.
+ * @param description         Optional description of the convar.
+ * @param flags               Optional bitstring of flags determining how the convar should be handled. See FCVAR_* constants for more details.
+ * @return                    A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
+ * @error                     Convar name is blank or is the same as an existing console command.
+*/
+stock ConVar AutoExecConfig_CreateConVar_GreaterThanZero(const char[] name, const char[] defaultValue, const char[] description="", int flags=0)
+{
+	// If configfile was set and convar has no dontrecord flag
+	if (!(flags & FCVAR_DONTRECORD) && strlen(g_sConfigFile) > 0)
+	{
+		// Reset the results
+		g_iLastFindResult = -1;
+		g_iLastAppendResult = -1;
+		
+		
+		// Add it if not found
+		char buffer[64];
+		
+		g_iLastFindResult = AutoExecConfig_FindValue(name, buffer, sizeof(buffer), true);
+		
+		// We only add this convar if it doesn't exist, or the file doesn't exist and it should be auto-generated
+		if (g_iLastFindResult == AUTOEXEC_FIND_NOT_FOUND || (g_iLastFindResult == AUTOEXEC_FIND_FILE_NOT_FOUND && g_bCreateFile))
+		{
+			g_iLastAppendResult = AutoExecConfig_AppendValue(name, defaultValue, description, flags, true, 0.0, false, 0.0);
+		}
+	}
+	
+	
+	// Create the convar
+	return CreateConVar(name, defaultValue, description, flags, true, 0.0, false, 0.0);
+}
+
+/**
+ * Creates a convar with specified range and appends it to the autoconfigfile if not found.
+ * FCVAR_DONTRECORD will be skipped.
+ *
+ * @param name                Name of new convar.
+ * @param defaultValue        String containing the default value of new convar.
+ * @param description         Optional description of the convar.
+ * @param flags               Optional bitstring of flags determining how the convar should be handled. See FCVAR_* constants for more details.
+ * @param min                 Minimum floating point value.
+ * @param max                 Maximum floating point value.
+ * @return                    A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
+ * @error                     Convar name is blank or is the same as an existing console command.
+*/
+stock ConVar AutoExecConfig_CreateConVar_Range(const char[] name, const char[] defaultValue, const char[] description="", int flags=0, float min, float max)
+{
+	// If configfile was set and convar has no dontrecord flag
+	if (!(flags & FCVAR_DONTRECORD) && strlen(g_sConfigFile) > 0)
+	{
+		// Reset the results
+		g_iLastFindResult = -1;
+		g_iLastAppendResult = -1;
+		
+		
+		// Add it if not found
+		char buffer[64];
+		
+		g_iLastFindResult = AutoExecConfig_FindValue(name, buffer, sizeof(buffer), true);
+		
+		// We only add this convar if it doesn't exist, or the file doesn't exist and it should be auto-generated
+		if (g_iLastFindResult == AUTOEXEC_FIND_NOT_FOUND || (g_iLastFindResult == AUTOEXEC_FIND_FILE_NOT_FOUND && g_bCreateFile))
+		{
+			g_iLastAppendResult = AutoExecConfig_AppendValue(name, defaultValue, description, flags, true, min, true, max);
+		}
+	}
+	
+	
+	// Create the convar
+	return CreateConVar(name, defaultValue, description, flags, true, min, true, max);
+}
+
+/**
+ * Creates a convar for holding strings and appends it to the autoconfigfile if not found.
+ * FCVAR_DONTRECORD will be skipped.
+ *
+ * @param name                Name of new convar.
+ * @param defaultValue        String containing the default value of new convar.
+ * @param description         Optional description of the convar.
+ * @param flags               Optional bitstring of flags determining how the convar should be handled. See FCVAR_* constants for more details.
+ * @return                    A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
+ * @error                     Convar name is blank or is the same as an existing console command.
+*/
+stock ConVar AutoExecConfig_CreateConVar_String(const char[] name, const char[] defaultValue, const char[] description="", int flags=0)
+{
+	// If configfile was set and convar has no dontrecord flag
+	if (!(flags & FCVAR_DONTRECORD) && strlen(g_sConfigFile) > 0)
+	{
+		// Reset the results
+		g_iLastFindResult = -1;
+		g_iLastAppendResult = -1;
+		
+		
+		// Add it if not found
+		char buffer[64];
+		
+		g_iLastFindResult = AutoExecConfig_FindValue(name, buffer, sizeof(buffer), true);
+		
+		// We only add this convar if it doesn't exist, or the file doesn't exist and it should be auto-generated
+		if (g_iLastFindResult == AUTOEXEC_FIND_NOT_FOUND || (g_iLastFindResult == AUTOEXEC_FIND_FILE_NOT_FOUND && g_bCreateFile))
+		{
+			g_iLastAppendResult = AutoExecConfig_AppendValue(name, defaultValue, description, flags, false, 0.0, true, 0.0);
+		}
+	}
+	
+	
+	// Create the convar
+	return CreateConVar(name, defaultValue, description, flags, false, 0.0, false, 0.0);
+}
 
 
 /**
